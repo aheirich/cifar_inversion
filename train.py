@@ -6,6 +6,7 @@ from keras.layers import Dense, Conv2D, Reshape, Flatten
 from keras.models import Sequential
 from keras.optimizers import Adadelta
 import matplotlib.pylab as plt
+import numpy
 
 inputWidth = 32 * 32 * 3
 layerWidth = [ 96, 96, 192, 192, 192, 192 ]
@@ -55,7 +56,7 @@ def oneHot(labels):
     y = [0] * numClasses
     y[label] = 1
     result.append(y)
-  return result
+  return numpy.array(result)
 
 def loadData():
   result = []
