@@ -15,6 +15,10 @@ outputShape = (10000, 10, 1, 1)
 denseLayerWidth = 256
 numClasses = 10 # cifar-10
 convolutionSize = 3
+batchSize = 128
+epochs = 50
+numBatches = 5
+
 
 def unpickle(file):
   import cPickle
@@ -53,17 +57,25 @@ def oneHot(labels):
     result.append(y)
   return result
 
+def loadData():
+  result = []
+  for batch in range(numBatches):
+    filename = 'cifar-10-batches-py/data_batch_' + str(batch + 1)
+    print 'get batch', filename
+    dict = unpickle(filename)
+    x_train = dict['data'].reshape(batchShape)
+    y_train = oneHot(dict['labels'])
+    subbatchSize = 1000
+    numSubbatches = len(y_train) / subbatchSize
+    for i in range(numSubbatches):
+      x_subbatch = x_train[i * subbatchSize : (i + 1) * subbatchSize]
+      y_subbatch = y_train[i * subbatchSize : (i + 1) * subbatchSize]
+      result.append((x_subbatch, y_subbatch))
+  return result
 
 
-numBatches = 5
-training_data = []
-for batch in range(numBatches):
-  print 'get batch', batch
-  filename = 'cifar-10-batches-py/data_batch_' + str(batch + 1)
-  dict = unpickle(filename)
-  x_train = dict['data'].reshape(batchShape)
-  y_train = oneHot(dict['labels'])
-  training_data.append((x_train, y_train))
+
+training_data = loadData()
 
 test_data = unpickle('cifar-10-batches-py/test_batch')
 x_test = test_data['data'].reshape(batchShape)
@@ -71,8 +83,6 @@ y_test = oneHot(test_data['labels'])
 
 model = createModel()
 
-batchSize = 128
-epochs = 50
 history = AccuracyHistory()
 
 for batch in training_data:
