@@ -2,19 +2,24 @@
 
 import sys
 import keras
-from keras.layers import Dense, Conv2D, Reshape, Flatten
 from keras.models import Sequential
+from keras.layers.convolutional import Convolution2D, MaxPooling2D, Conv2D
+from keras.layers import Activation, Flatten, Dense, Dropout
+from keras.layers.normalization import BatchNormalization
 from keras.optimizers import Adadelta
 from keras.utils import np_utils
 import matplotlib.pylab as plt
 import numpy
 import time
 
+
+from keras import backend as K
+if K.backend()=='tensorflow':
+  K.set_image_dim_ordering("th")
+
 inputWidth = 32 * 32 * 3
 layerWidth = [ 96, 96, 192, 192, 192, 192 ]
-inputShape = (32, 32, 3)
-batchShape = (10000, 32, 32, 3)
-outputShape = (10000, 10, 1, 1)
+inputShape = (3, 32, 32)
 denseLayerWidth = 256
 numClasses = 10 # cifar-10
 convolutionSize = 3
@@ -46,7 +51,37 @@ def createModel():
   return model
 
 
-
+def createModel2():
+  model = Sequential()
+  model.add(Convolution2D(48, 3, 3, border_mode='same', input_shape=(3, 32, 32)))
+  model.add(Activation('relu'))
+  model.add(Convolution2D(48, 3, 3))
+  model.add(Activation('relu'))
+  model.add(MaxPooling2D(pool_size=(2, 2)))
+  model.add(Dropout(0.25))
+  model.add(Convolution2D(96, 3, 3, border_mode='same'))
+  model.add(Activation('relu'))
+  model.add(Convolution2D(96, 3, 3))
+  model.add(Activation('relu'))
+  model.add(MaxPooling2D(pool_size=(2, 2)))
+  model.add(Dropout(0.25))
+  model.add(Convolution2D(192, 3, 3, border_mode='same'))
+  model.add(Activation('relu'))
+  model.add(Convolution2D(192, 3, 3))
+  model.add(Activation('relu'))
+  model.add(MaxPooling2D(pool_size=(2, 2)))
+  model.add(Dropout(0.25))
+  model.add(Flatten())
+  model.add(Dense(512))
+  model.add(Activation('relu'))
+  model.add(Dropout(0.5))
+  model.add(Dense(256))
+  model.add(Activation('relu'))
+  model.add(Dropout(0.5))
+  model.add(Dense(num_classes, activation='softmax'))
+  # Compile the model
+  model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+  return model
 
 
 
