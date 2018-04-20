@@ -7,6 +7,7 @@ from keras.layers.convolutional import Convolution2D, MaxPooling2D, Conv2D
 from keras.layers import Activation, Flatten, Dense, Dropout
 from keras.layers.normalization import BatchNormalization
 from keras.optimizers import Adadelta
+from keras.callbacks import ModelCheckpoint
 from keras.utils import np_utils
 import matplotlib.pylab as plt
 import numpy
@@ -24,9 +25,10 @@ denseLayerWidth = 256
 numClasses = 10 # cifar-10
 convolutionSize = 3
 batchSize = 128
-epochs = 1
+epochs = 1000
 numBatches = 5
 
+checkpointPath = "/scratch/users/aheirich/cifar/cifar-10_{epoch:02d}_{val_acc:.2f}.best.hdf5"
 
 
 
@@ -80,7 +82,7 @@ def createModel2():
   model.add(Dropout(0.5))
   model.add(Dense(num_classes, activation='softmax'))
   # Compile the model
-  model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+  model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
   return model
 
 
@@ -135,6 +137,9 @@ test_labels = np_utils.to_categorical(test_labels, num_classes)
 
 model = createModel()
 
+checkpoint = ModelCheckpoint(checkpointPath, monitor='val_acc', verbose=1,
+                             save_best_only=True, mode='max')
+
 
 start = time.time()
 print 'starting time', start
@@ -142,6 +147,7 @@ model_info = model.fit(train_features, train_labels,
         batch_size=batchSize,
         epochs=epochs,
         verbose=1,
+        callbacks=[ checkpoint ],
         validation_data=(test_features, test_labels))
 end = time.time()
 print 'ending time', end
